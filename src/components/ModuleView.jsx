@@ -238,7 +238,7 @@ export default function ModuleView({
                 onClick={() => {
                   if (confirm('คุณต้องการล้างความคืบหน้าของโมดูลนี้หรือไม่? คะแนนและประวัติบทเรียนของโมดูลนี้จะถูกลบทั้งหมด')) {
                     onResetModule(module.id)
-                    changeTab('learn')
+                    navigate(`/module/${module.id}`, { replace: true })
                   }
                 }}
                 style={{

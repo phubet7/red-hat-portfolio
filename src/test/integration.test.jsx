@@ -158,4 +158,50 @@ describe('ModuleView Integration & Deep Linking', () => {
     // Should redirect to rhel-l2 (first incomplete lesson after rhel-l1)
     expect(screen.getByTestId('location-display')).toHaveTextContent('/module/rhel/learn/rhel-l2')
   })
+
+  it('resets progress successfully when clicking the local reset button in ModuleView', () => {
+    const onResetModule = vi.fn()
+    window.confirm = () => true
+
+    render(
+      <MemoryRouter initialEntries={['/module/rhel/scenario']}>
+        <LocationDisplay />
+        <Routes>
+          <Route
+            path="/module/:moduleId"
+            element={
+              <ModuleView
+                module={mockModule}
+                moduleState={mockState}
+                onBack={vi.fn()}
+                onLessonComplete={vi.fn()}
+                onQuizScore={vi.fn()}
+                onScenarioComplete={vi.fn()}
+                onResetModule={onResetModule}
+              />
+            }
+          />
+          <Route
+            path="/module/:moduleId/:tabId"
+            element={
+              <ModuleView
+                module={mockModule}
+                moduleState={mockState}
+                onBack={vi.fn()}
+                onLessonComplete={vi.fn()}
+                onQuizScore={vi.fn()}
+                onScenarioComplete={vi.fn()}
+                onResetModule={onResetModule}
+              />
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const resetBtn = screen.getByText('ล้างความคืบหน้าเฉพาะโมดูลนี้')
+    expect(resetBtn).toBeInTheDocument()
+    fireEvent.click(resetBtn)
+    expect(onResetModule).toHaveBeenCalledWith('rhel')
+  })
 })
