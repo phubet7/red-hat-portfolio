@@ -310,6 +310,22 @@ main {
   padding: var(--space-6);
 }
 
+.card--interactive {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card--interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card--interactive:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  outline: 3px solid var(--rh-red);
+  outline-offset: 3px;
+}
+
 /* ---------- Progress bar ---------- */
 
 .progress {
@@ -397,7 +413,25 @@ main {
   animation: fadeUp 0.4s ease both;
 }
 
+/* ---------- Focus states & Accessibility ---------- */
+:focus-visible {
+  outline: 3px solid var(--rh-red);
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+div[role="button"]:focus-visible {
+  outline: 3px solid var(--rh-red);
+  outline-offset: 3px;
+}
+
 /* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .brand__tag {
+    display: none;
+  }
+}
 
 @media (max-width: 640px) {
   main {
@@ -410,3 +444,241 @@ main {
     display: none;
   }
 }
+
+/* ---------- Stepper (Lessons navigation) ---------- */
+.stepper {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  -webkit-overflow-scrolling: touch;
+}
+
+.stepper__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.stepper__btn:hover {
+  background: var(--rh-gray-100);
+  border-color: var(--border-strong);
+}
+
+.stepper__btn--active {
+  border-color: var(--rh-red);
+  background: var(--rh-red-tint);
+  color: var(--rh-red-dark);
+  font-weight: 700;
+}
+
+.stepper__badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  background: var(--rh-gray-200);
+  color: var(--text-muted);
+  font-weight: 700;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stepper__badge--active {
+  background: var(--rh-red);
+  color: #fff;
+}
+
+.stepper__badge--done {
+  background: var(--success);
+  color: #fff;
+}
+
+/* ---------- Stat boxes (Quiz start screen) ---------- */
+.stat-grid {
+  display: flex;
+  gap: var(--space-5);
+  justify-content: center;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.stat-box {
+  text-align: center;
+  padding: var(--space-3) var(--space-5);
+  background: var(--rh-gray-100);
+  border-radius: var(--radius);
+  min-width: 110px;
+  border: 1px solid var(--border);
+}
+
+.stat-box__val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--rh-black);
+}
+
+.stat-box__val--highlight {
+  color: var(--success);
+}
+
+.stat-box__lbl {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- Info grid (Scenario start screen) ---------- */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.info-box {
+  padding: var(--space-3) var(--space-4);
+  background: var(--rh-gray-100);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.info-box__lbl {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.info-box__val {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--rh-black);
+}
+
+/* ---------- Breadcrumbs ---------- */
+.breadcrumbs {
+  margin-bottom: var(--space-4);
+  font-size: 0.88rem;
+}
+
+.breadcrumbs__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  gap: var(--space-2);
+}
+
+.breadcrumbs__item {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.breadcrumbs__item:not(:last-child)::after {
+  content: "/";
+  margin-left: var(--space-2);
+  color: var(--rh-gray-400);
+}
+
+.breadcrumbs__link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--rh-gray-600);
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.breadcrumbs__link:hover {
+  color: var(--rh-red);
+  text-decoration: underline;
+}
+
+.breadcrumbs__current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---------- Terminal Console (CLI Examples) ---------- */
+.terminal-console {
+  background: #1e1e1e;
+  border-radius: var(--radius);
+  border: 1px solid #333;
+  margin: var(--space-4) 0;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.terminal-console__header {
+  background: #2d2d2d;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.terminal-console__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.terminal-console__dot--close { background: #ff5f56; }
+.terminal-console__dot--min { background: #ffbd2e; }
+.terminal-console__dot--max { background: #27c93f; }
+
+.terminal-console__title {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #8e8e8e;
+  user-select: none;
+}
+
+.terminal-console__screen {
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #f1f1f1;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.terminal-console__prompt {
+  color: #27c93f;
+  font-weight: 700;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.terminal-console__cmd {
+  color: #fff;
+  font-weight: 600;
+}
+
+.terminal-console__output {
+  color: #a9a9a9;
+  margin-top: 4px;
+}
+

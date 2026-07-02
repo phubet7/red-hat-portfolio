@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import OptionButton from './OptionButton'
 
 export default function Quiz({ module, moduleState, onComplete }) {
   const [started, setStarted] = useState(false)
@@ -7,6 +8,7 @@ export default function Quiz({ module, moduleState, onComplete }) {
   const [answered, setAnswered] = useState(false)
   const [answers, setAnswers] = useState([])
   const [finished, setFinished] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   const quiz = module.quiz
   const total = quiz.questions.length
@@ -42,7 +44,7 @@ export default function Quiz({ module, moduleState, onComplete }) {
   function finish() {
     const correctCount = answers.filter((a) => a.correct).length
     const score = Math.round((correctCount / total) * 100)
-    onComplete(module.id, score)
+    onComplete(module.id, score, answers)
     setFinished(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -62,15 +64,7 @@ export default function Quiz({ module, moduleState, onComplete }) {
             ต้องได้คะแนนอย่างน้อย {quiz.passingScore}% เพื่อผ่าน
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--space-5)',
-              justifyContent: 'center',
-              marginBottom: 'var(--space-5)',
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="stat-grid">
             <Stat label="จำนวนคำถาม" value={total} />
             <Stat label="คะแนนผ่าน" value={`${quiz.passingScore}%`} />
             <Stat
@@ -86,6 +80,63 @@ export default function Quiz({ module, moduleState, onComplete }) {
               style={{ fontSize: '0.9rem', marginBottom: 'var(--space-4)' }}
             >
               ✓ คุณผ่านแบบทดสอบนี้แล้ว (สามารถทำซ้ำเพื่อทบทวนได้)
+            </div>
+          )}
+
+          {moduleState?.lastQuizAttempt && (
+            <div style={{ marginBottom: 'var(--space-5)', textAlign: 'left' }}>
+              <button
+                className="btn btn--ghost btn--block"
+                onClick={() => setShowHistory(!showHistory)}
+                style={{ justifyContent: 'space-between', fontSize: '0.88rem' }}
+              >
+                <span>📊 ประวัติการทดสอบครั้งล่าสุด ({moduleState.lastQuizAttempt.score}%)</span>
+                <span>{showHistory ? '▲ ปิด' : '▼ ดูคำตอบ'}</span>
+              </button>
+              {showHistory && (
+                <div
+                  style={{
+                    marginTop: 'var(--space-3)',
+                    padding: 'var(--space-4)',
+                    background: 'var(--rh-gray-100)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    maxHeight: 280,
+                    overflowY: 'auto',
+                    animation: 'fadeUp 0.2s ease both'
+                  }}
+                >
+                  {quiz.questions.map((q, idx) => {
+                    const savedAns = moduleState.lastQuizAttempt.answers?.[idx]
+                    const isCorrect = !!savedAns?.correct
+                    return (
+                      <div
+                        key={q.id}
+                        style={{
+                          padding: '8px 12px',
+                          marginBottom: '8px',
+                          borderRadius: 'var(--radius-sm)',
+                          borderLeft: `3px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`,
+                          background: '#fff',
+                          fontSize: '0.85rem'
+                        }}
+                      >
+                        <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                          {isCorrect ? '✓' : '✗'} {idx + 1}. {q.question}
+                        </div>
+                        <div className="muted" style={{ fontSize: '0.8rem' }}>
+                          คำตอบของคุณ: {savedAns ? q.options[savedAns.selected] : 'ไม่ได้ตอบ'}
+                        </div>
+                        {!isCorrect && (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--success)', marginTop: 2 }}>
+                            คำตอบที่ถูกต้อง: {q.options[q.correct]}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -122,11 +173,15 @@ export default function Quiz({ module, moduleState, onComplete }) {
           </p>
 
           <div
+            className="progress"
+            role="progressbar"
+            aria-valuenow={score}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`คะแนนทดสอบ: ${score}%`}
             style={{
               height: 12,
-              background: 'var(--rh-gray-200)',
               borderRadius: 'var(--radius-pill)',
-              overflow: 'hidden',
               marginBottom: 'var(--space-5)',
               maxWidth: 400,
               margin: '0 auto var(--space-5)',
@@ -209,7 +264,14 @@ export default function Quiz({ module, moduleState, onComplete }) {
           <span className="muted">คำถามที่ {currentIdx + 1} จาก {total}</span>
           <span style={{ fontWeight: 600 }}>{progressPct}%</span>
         </div>
-        <div className="progress">
+        <div
+          className="progress"
+          role="progressbar"
+          aria-valuenow={progressPct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`ความคืบหน้าแบบทดสอบ: ${progressPct}%`}
+        >
           <div className="progress__fill" style={{ width: `${progressPct}%` }} />
         </div>
       </div>
@@ -225,74 +287,17 @@ export default function Quiz({ module, moduleState, onComplete }) {
             const showCorrect = answered && i === question.correct
             const showWrong = answered && isSelected && i !== question.correct
 
-            let style = {
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 'var(--space-3)',
-              padding: 'var(--space-3) var(--space-4)',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: '#fff',
-              cursor: answered ? 'default' : 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              fontSize: '0.97rem',
-              transition: 'all 0.15s ease',
-            }
-
-            if (!answered && isSelected) {
-              style = {
-                ...style,
-                border: '2px solid var(--rh-red)',
-                background: 'var(--rh-red-tint)',
-              }
-            }
-            if (showCorrect) {
-              style = { ...style, border: '2px solid var(--success)', background: 'var(--success-bg)' }
-            }
-            if (showWrong) {
-              style = { ...style, border: '2px solid var(--danger)', background: '#fdeaea' }
-            }
-
             return (
-              <button
+              <OptionButton
                 key={i}
-                style={style}
+                index={i}
+                text={opt}
+                isSelected={isSelected}
+                showCorrect={showCorrect}
+                showWrong={showWrong}
+                answered={answered}
                 onClick={() => !answered && setSelected(i)}
-                disabled={answered}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: '50%',
-                    border: showCorrect
-                      ? '2px solid var(--success)'
-                      : showWrong
-                        ? '2px solid var(--danger)'
-                        : isSelected
-                          ? '2px solid var(--rh-red)'
-                          : '2px solid var(--border-strong)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    background: showCorrect
-                      ? 'var(--success)'
-                      : showWrong
-                        ? 'var(--danger)'
-                        : isSelected
-                          ? 'var(--rh-red)'
-                          : '#fff',
-                    color: showCorrect || showWrong || isSelected ? '#fff' : 'var(--text-muted)',
-                  }}
-                >
-                  {showCorrect ? '✓' : showWrong ? '✗' : String.fromCharCode(65 + i)}
-                </span>
-                <span style={{ paddingTop: 2 }}>{opt}</span>
-              </button>
+              />
             )
           })}
         </div>
@@ -352,25 +357,11 @@ export default function Quiz({ module, moduleState, onComplete }) {
 
 function Stat({ label, value, highlight }) {
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: 'var(--space-3) var(--space-5)',
-        background: 'var(--rh-gray-100)',
-        borderRadius: 'var(--radius)',
-        minWidth: 110,
-      }}
-    >
-      <div
-        style={{
-          fontSize: '1.5rem',
-          fontWeight: 800,
-          color: highlight ? 'var(--success)' : 'var(--rh-black)',
-        }}
-      >
+    <div className="stat-box">
+      <div className={`stat-box__val ${highlight ? 'stat-box__val--highlight' : ''}`}>
         {value}
       </div>
-      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+      <div className="stat-box__lbl">{label}</div>
     </div>
   )
 }

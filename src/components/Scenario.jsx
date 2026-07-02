@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import OptionButton from './OptionButton'
 
 export default function Scenario({ module, onComplete }) {
   const [phase, setPhase] = useState('intro') // intro | decisions | summary
@@ -74,14 +75,7 @@ export default function Scenario({ module, onComplete }) {
 
           <div style={{ padding: 'var(--space-6)' }}>
             {/* Customer card */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: 'var(--space-3)',
-                marginBottom: 'var(--space-5)',
-              }}
-            >
+            <div className="info-grid">
               <InfoBox label="ลูกค้า" value={sc.customer.name} />
               <InfoBox label="อุตสาหกรรม" value={sc.customer.industry} />
               <InfoBox label="ขนาดองค์กร" value={sc.customer.size} />
@@ -91,7 +85,12 @@ export default function Scenario({ module, onComplete }) {
             <h3 style={{ fontSize: '1.1rem', marginBottom: 'var(--space-2)' }}>บริบทของลูกค้า</h3>
             <p style={{ lineHeight: 1.8, marginBottom: 'var(--space-5)' }}>{sc.context}</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)', marginBottom: 'var(--space-5)' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: 'var(--space-5)',
+              marginBottom: 'var(--space-5)'
+            }}>
               <div>
                 <h3 style={{ fontSize: '1.05rem', marginBottom: 'var(--space-3)', color: 'var(--danger)' }}>
                   😟 ปัญหา (Pain Points)
@@ -222,6 +221,7 @@ export default function Scenario({ module, onComplete }) {
   // ---------- Decision phase ----------
   const decision = sc.decisions[decisionIdx]
   const chosen = currentChoice != null ? decision.options[currentChoice] : null
+  const progressPct = Math.round((decisionIdx / total) * 100)
 
   return (
     <div className="container-tight fade-up">
@@ -237,10 +237,17 @@ export default function Scenario({ module, onComplete }) {
         >
           <span className="muted">สถานการณ์ที่ {decisionIdx + 1} จาก {total}</span>
         </div>
-        <div className="progress">
+        <div
+          className="progress"
+          role="progressbar"
+          aria-valuenow={progressPct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`ความคืบหน้ากรณีศึกษา: ${progressPct}%`}
+        >
           <div
             className="progress__fill"
-            style={{ width: `${Math.round(((decisionIdx) / total) * 100)}%` }}
+            style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
@@ -268,67 +275,17 @@ export default function Scenario({ module, onComplete }) {
             const showCorrect = revealed && opt.correct
             const showWrong = revealed && isSelected && !opt.correct
 
-            let style = {
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 'var(--space-3)',
-              padding: 'var(--space-3) var(--space-4)',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: '#fff',
-              cursor: revealed ? 'default' : 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              fontSize: '0.95rem',
-              transition: 'all 0.15s ease',
-            }
-            if (!revealed && isSelected) {
-              style = { ...style, border: '2px solid var(--rh-red)', background: 'var(--rh-red-tint)' }
-            }
-            if (showCorrect) {
-              style = { ...style, border: '2px solid var(--success)', background: 'var(--success-bg)' }
-            }
-            if (showWrong) {
-              style = { ...style, border: '2px solid var(--danger)', background: '#fdeaea' }
-            }
-
             return (
-              <button
+              <OptionButton
                 key={i}
-                style={style}
+                index={i}
+                text={opt.text}
+                isSelected={isSelected}
+                showCorrect={showCorrect}
+                showWrong={showWrong}
+                answered={revealed}
                 onClick={() => !revealed && setCurrentChoice(i)}
-                disabled={revealed}
-              >
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: '50%',
-                    border: showCorrect
-                      ? '2px solid var(--success)'
-                      : showWrong
-                        ? '2px solid var(--danger)'
-                        : isSelected
-                          ? '2px solid var(--rh-red)'
-                          : '2px solid var(--border-strong)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    background:
-                      showCorrect ? 'var(--success)'
-                        : showWrong ? 'var(--danger)'
-                          : isSelected ? 'var(--rh-red)'
-                            : '#fff',
-                    color: showCorrect || showWrong || isSelected ? '#fff' : 'var(--text-muted)',
-                  }}
-                >
-                  {showCorrect ? '✓' : showWrong ? '✗' : String.fromCharCode(65 + i)}
-                </span>
-                <span style={{ paddingTop: 2 }}>{opt.text}</span>
-              </button>
+              />
             )
           })}
         </div>
@@ -383,18 +340,9 @@ export default function Scenario({ module, onComplete }) {
 
 function InfoBox({ label, value }) {
   return (
-    <div
-      style={{
-        padding: 'var(--space-3) var(--space-4)',
-        background: 'var(--rh-gray-100)',
-        borderRadius: 'var(--radius)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
-        {label}
-      </div>
-      <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{value}</div>
+    <div className="info-box">
+      <div className="info-box__lbl">{label}</div>
+      <div className="info-box__val">{value}</div>
     </div>
   )
 }

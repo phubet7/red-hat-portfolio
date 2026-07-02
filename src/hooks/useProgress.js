@@ -76,7 +76,7 @@ export function useProgress() {
     })
   }, [ensureModule])
 
-  const recordQuizScore = useCallback((moduleId, score) => {
+  const recordQuizScore = useCallback((moduleId, score, answers = []) => {
     setProgress((prev) => {
       const moduleState = ensureModule(prev, moduleId)
       const best =
@@ -87,6 +87,7 @@ export function useProgress() {
           ...moduleState,
           quizScore: best,
           quizAttempts: moduleState.quizAttempts + 1,
+          lastQuizAttempt: { score, answers, timestamp: Date.now() },
           lastActivity: Date.now(),
         },
       }
@@ -135,14 +136,14 @@ export function getModuleProgress(module, moduleState) {
   if (!module) return { percent: 0, complete: false, lessonsDone: 0 }
   const totalLessons = module.lessons.length
   const lessonsDone = moduleState
-    ? module.lessons.filter((l) => moduleState.completedLessons[l.id]).length
+    ? module.lessons.filter((l) => moduleState.completedLessons?.[l.id]).length
     : 0
   const quizPassed = moduleState ? (moduleState.quizScore ?? 0) >= module.quiz.passingScore : false
   const scenarioDone = moduleState ? moduleState.scenarioCompleted : false
 
   // 4 checkpoints: lessons (50% weight), quiz (25%), scenario (25%)
   const lessonPct = (lessonsDone / totalLessons) * 50
-  const quizPct = quizPassed ? 25 : moduleState?.quizScore ? (moduleState.quizScore / 100) * 25 : 0
+  const quizPct = quizPassed ? 25 : (moduleState?.quizScore != null && moduleState.quizScore > 0) ? (moduleState.quizScore / 100) * 25 : 0
   const scenarioPct = scenarioDone ? 25 : 0
   const percent = Math.round(lessonPct + quizPct + scenarioPct)
   const complete = lessonsDone === totalLessons && quizPassed && scenarioDone
