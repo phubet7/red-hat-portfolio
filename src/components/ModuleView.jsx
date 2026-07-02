@@ -17,6 +17,7 @@ export default function ModuleView({
   onLessonComplete,
   onQuizScore,
   onScenarioComplete,
+  onResetModule,
 }) {
   const { tabId, lessonId } = useParams()
   const navigate = useNavigate()

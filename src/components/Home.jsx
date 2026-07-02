@@ -282,6 +282,41 @@ export default function Home({ progress, onOpenModule, onResetAll }) {
           )
         })}
       </div>
+
+      {/* Reset progress section */}
+      {hasProgress && (
+        <div
+          style={{
+            marginTop: 'var(--space-7)',
+            paddingTop: 'var(--space-4)',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 'var(--space-3)',
+          }}
+        >
+          <span className="muted" style={{ fontSize: '0.88rem' }}>
+            ต้องการเริ่มต้นใหม่? คะแนนและความคืบหน้าทั้งหมดจะถูกลบ
+          </span>
+          <button
+            className="btn btn--ghost"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+            onClick={() => setShowResetConfirm(true)}
+          >
+            ล้างข้อมูลทั้งหมด
+          </button>
+        </div>
+      )}
+
+      {/* Reset confirmation modal */}
+      {showResetConfirm && (
+        <ResetConfirmModal
+          onConfirm={handleReset}
+          onClose={() => setShowResetConfirm(false)}
+        />
+      )}
     </div>
   )
 }
